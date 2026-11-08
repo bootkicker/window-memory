@@ -948,9 +948,11 @@ class _StartupListBody(object):
         # The crosshair icon in front of the label, as on the General tab. The button keeps its label and its
         # natural width: only an image is set, shown even when the theme turns button images off. Without the
         # icon in the theme the glyph goes in front of the label instead. It never stops the page from building.
+        # lookup_icon rather than has_icon: it also searches the legacy icon folders (linuxmint/cinnamon#13270);
+        # 16 px is the size of Gtk.IconSize.BUTTON.
         try:
             theme = Gtk.IconTheme.get_default()
-            if theme is not None and theme.has_icon(PICK_ICON_NAME):
+            if theme is not None and theme.lookup_icon(PICK_ICON_NAME, 16, 0) is not None:
                 self.pick_button.set_image(Gtk.Image.new_from_icon_name(PICK_ICON_NAME, Gtk.IconSize.BUTTON))
                 self.pick_button.set_image_position(Gtk.PositionType.LEFT)
                 self.pick_button.set_always_show_image(True)

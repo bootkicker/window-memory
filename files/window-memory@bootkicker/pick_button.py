@@ -66,7 +66,7 @@ MAX_ENTRIES_STEP = 10
 HEADER_CSS_CLASS = 'window-memory-header'
 HEADER_CSS = ('.%s:disabled { opacity: 0.5; }' % HEADER_CSS_CLASS).encode('utf-8')
 
-# Mint-Y and Mint-Y-Yaru inherit Adwaita, which ships this icon, so has_icon is true there
+# Mint-Y and Mint-Y-Yaru inherit Adwaita, which ships this icon, so lookup_icon finds it there
 # and users see the Adwaita icon. The character below is only for an icon theme chain
 # without it. The Ubuntu font has no U+2316, so GTK takes the glyph from a fallback font
 # (FreeSerif or Symbola, if one is installed).
@@ -317,8 +317,10 @@ class PickWindowButton(SettingsWidget):
 
     @staticmethod
     def _theme_has_icon():
+        # lookup_icon rather than has_icon: it also searches the legacy icon folders
+        # (linuxmint/cinnamon#13270). 16 px is the size of Gtk.IconSize.BUTTON.
         theme = Gtk.IconTheme.get_default()
-        return theme is not None and theme.has_icon(ICON_NAME)
+        return theme is not None and theme.lookup_icon(ICON_NAME, 16, 0) is not None
 
     def _apply_border(self):
         provider = Gtk.CssProvider()

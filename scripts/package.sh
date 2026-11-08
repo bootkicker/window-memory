@@ -14,6 +14,8 @@ cp -r "$ROOT/files/$UUID/." "$OUT/files/$UUID/"
 # The Version row of the settings window shows the commit this package was built from.
 "$ROOT/scripts/write-version-json.sh" "$OUT/files/$UUID"
 cp "$ROOT/info.json" "$ROOT/README.md" "$ROOT/CHANGELOG.md" "$OUT/"
+# The licence goes with the installed extension; the repository keeps one LICENSE, at its root.
+cp "$ROOT/LICENSE" "$OUT/files/$UUID/LICENSE"
 
 if [ ! -f "$ROOT/screenshot.png" ]; then
     echo "screenshot.png is missing: the store listing needs it." >&2

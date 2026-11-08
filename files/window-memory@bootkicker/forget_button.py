@@ -43,7 +43,7 @@ def _(text):
     return _TRANSLATIONS.gettext(text)
 
 
-# Mint-Y and Mint-Y-Yaru inherit Adwaita, which ships this icon, so has_icon is true there and
+# Mint-Y and Mint-Y-Yaru inherit Adwaita, which ships this icon, so lookup_icon finds it there and
 # users see the Adwaita icon. The character below is only for an icon theme chain without it.
 # The Ubuntu font has no U+26A0, so GTK takes the glyph from a fallback font (DejaVu Sans, if
 # one is installed). It is a label of its own in front of the text, so that the red can be put
@@ -280,8 +280,10 @@ class ForgetAllButton(SettingsWidget):
 
     @staticmethod
     def _theme_has_icon():
+        # lookup_icon rather than has_icon: it also searches the legacy icon folders
+        # (linuxmint/cinnamon#13270). 16 px is the size of Gtk.IconSize.BUTTON.
         theme = Gtk.IconTheme.get_default()
-        return theme is not None and theme.has_icon(ICON_NAME)
+        return theme is not None and theme.lookup_icon(ICON_NAME, 16, 0) is not None
 
     def _apply_red(self, mark):
         add_style(mark, ICON_CSS_CLASS, ICON_CSS, 'warning mark')

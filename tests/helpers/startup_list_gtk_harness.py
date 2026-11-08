@@ -366,7 +366,7 @@ check(len(dialogs.shown) == 0, 'and it opens no form')
 check(len(handler.listeners.get('startup-pick', [])) == 1, 'the widget listens to startup-pick once')
 check(widget.get_sensitive(), 'enabled: the widget is sensitive')
 # The pick button has the crosshair icon, or, in an icon theme without it, the crosshair glyph in front of its label.
-theme_has_pick_icon = Gtk.IconTheme.get_default().has_icon('find-location-symbolic')
+theme_has_pick_icon = Gtk.IconTheme.get_default().lookup_icon('find-location-symbolic', 16, 0) is not None
 pick_label = 'Pick a window to start at login' if theme_has_pick_icon else '\u2316 Pick a window to start at login'
 labels = [b.get_label() for b in (widget.pick_button, widget.remove_button, widget.startup_button)]
 check(labels == [pick_label, 'Remove', 'Add or edit in Startup Applications…'],

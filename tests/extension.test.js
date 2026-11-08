@@ -16,6 +16,19 @@ function load(env) {
     return { ext, callbacks };
 }
 
+// Cinnamon 6.8 loads the main file of an extension with its native importer (ui/extension.js:519 at tag 6.8.0): there
+// `module` is undefined (only require() gives one, :98-106, :219), and the importer exports the top-level functions.
+// This evaluates extension.js that way: `module` undefined, require() still there for lib/, and the three top-level
+// functions read from the scope the file defines.
+function loadNative() {
+    const { createRequire } = require('node:module');
+    const src = fs.readFileSync(EXT, 'utf8');
+    const run = new Function('require', 'module',
+        src + '\n;return { init: typeof init === "function" ? init : undefined, enable: typeof enable === "function" ? enable : undefined,'
+        + ' disable: typeof disable === "function" ? disable : undefined };');
+    return run(createRequire(EXT), undefined);
+}
+
 function readState(env) {
     return JSON.parse(fs.readFileSync(env.statePath, 'utf8'));
 }
@@ -2765,12 +2778,20 @@ test('a forget that fails is logged and notifies that the window could not be fo
 });
 
 // The notifications are translated in the domain of the uuid. The Spices installer compiles po/<lang>.po into
-// ~/.local/share/locale/<lang>/LC_MESSAGES/<uuid>.mo (cinnamon-settings bin/Spices.py:733-737), and enable() binds the
-// domain to that folder. With no translation (the mock's default) the texts stay in English: the tests above.
-test('enable binds the translation domain of the extension to ~/.local/share/locale', () => {
+// <user data dir>/locale/<lang>/LC_MESSAGES/<uuid>.mo (python3/cinnamon/harvester.py:44-45; Cinnamon 6.0's bin/Spices.py:27
+// always uses ~/.local/share/locale, the default user data dir), and enable() binds the domain to that folder. With no translation (the mock's default) the texts stay in
+// English: the tests above.
+test('enable binds the translation domain of the extension to the locale folder of the user data dir', () => {
     const env = install();
     load(env);
     assert.deepEqual(env.textDomains, [['window-memory@bootkicker', env.homeDir + '/.local/share/locale']]);
+});
+
+test('the translation domain follows a user data dir moved away from ~/.local/share (XDG_DATA_HOME)', () => {
+    const env = install();
+    env.userDataDir = path.join(env.configDir, 'data-home');
+    load(env);
+    assert.deepEqual(env.textDomains, [['window-memory@bootkicker', env.userDataDir + '/locale']]);
 });
 
 test('every notification is translated in the domain of the extension, with the application name where the translation has %s', () => {
@@ -2839,4 +2860,36 @@ test('forgetAll does not write over a state file that could not be moved aside',
     env.runTimers();
     assert.equal(fs.readFileSync(env.statePath, 'utf8'), '{broken');
     assert.deepEqual(fs.readdirSync(path.dirname(env.statePath)).filter(f => f !== 'safety.json'), ['state.json']);
+});
+
+test('extension.js loads with Cinnamon 6.8\'s native importer, where `module` is undefined, and exports init, enable and disable as top-level functions', () => {
+    const env = install();
+    let ext;
+    assert.doesNotThrow(() => { ext = loadNative(); });
+    for (const name of ['init', 'enable', 'disable']) assert.equal(typeof ext[name], 'function', name);
+    ext.init({ uuid: 'window-memory@bootkicker' });
+    const callbacks = ext.enable();
+    assert.equal(typeof callbacks, 'object');
+    ext.disable();
+    assert.equal(env.errors, undefined);
+});
+
+test('extension.js still exports init, enable and disable through module.exports when require() loads it', () => {
+    install();
+    delete require.cache[EXT];
+    const ext = require(EXT);
+    assert.deepEqual(Object.keys(ext).sort(), ['disable', 'enable', 'init']);
+});
+
+// The Spices reviewers' rule: a GLib source or Meta later callback returns GLib.SOURCE_REMOVE or SOURCE_CONTINUE, not a
+// bare boolean (cinnamon-spices-extensions .github/copilot-instructions.md:136-137).
+test('every Meta.later_add callback returns GLib.SOURCE_REMOVE, not a bare false', () => {
+    const src = fs.readFileSync(EXT, 'utf8');
+    const starts = [...src.matchAll(/Meta\.later_add\(/g)].map(m => m.index);
+    assert.ok(starts.length >= 2, 'the laters are found');
+    for (const start of starts) {
+        const body = src.slice(start, src.indexOf('\n                });', start));
+        assert.doesNotMatch(body, /return (false|true)\b/, body.split('\n')[0]);
+        assert.match(body, /return GLib\.SOURCE_REMOVE;/);
+    }
 });

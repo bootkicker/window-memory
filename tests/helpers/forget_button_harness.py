@@ -458,7 +458,7 @@ check(widget.get_tooltip_text() is None, 'no tooltip, as before')
 # 2. Warning mark and label. The mark is the theme icon when the icon theme has it, and the
 # glyph in front of the label (not inside its text) when it has not.
 real_has_icon = Button._theme_has_icon
-theme_has_it = Gtk.IconTheme.get_default().has_icon(THEME_ICON)
+theme_has_it = Gtk.IconTheme.get_default().lookup_icon(THEME_ICON, 16, 0) is not None
 for name, forced in (('this theme', None), ('with the icon', True), ('without the icon', False)):
     if forced is not None:
         Button._theme_has_icon = staticmethod(lambda forced=forced: forced)

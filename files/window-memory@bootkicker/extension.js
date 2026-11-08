@@ -453,10 +453,11 @@ class WindowMemory {
     }
 
     _enable() {
-        // The Spices installer compiles po/<lang>.po into ~/.local/share/locale/<lang>/LC_MESSAGES/<uuid>.mo
-        // (cinnamon-settings bin/Spices.py:733-737). Cinnamon binds the domain of an applet to that folder
-        // (ui/appletManager.js:612), not the domain of an extension.
-        Gettext.bindtextdomain(UUID, GLib.get_home_dir() + '/.local/share/locale');
+        // The Spices installer compiles po/<lang>.po into <locale folder>/<lang>/LC_MESSAGES/<uuid>.mo: the user data dir's
+        // locale folder in current Cinnamon (python3/cinnamon/harvester.py:44-45), ~/.local/share/locale in Cinnamon 6.0
+        // (cinnamon-settings bin/Spices.py:27, 733-737), the same folder unless XDG_DATA_HOME is set. Cinnamon binds the
+        // domain of an applet to its folder (ui/appletManager.js:612), not the domain of an extension.
+        Gettext.bindtextdomain(UUID, GLib.get_user_data_dir() + '/locale');
         // Read before anything that can fail: a start that fails knows whether a stop was already recorded.
         this._readSafety();
         // Without the settings class there is no Enable switch to resume with: then only deleting safety.json resumes.
@@ -1147,7 +1148,7 @@ class WindowMemory {
                 rec.minimizeLater = Meta.later_add(Meta.LaterType.RESIZE, () => {
                     rec.minimizeLater = null; // it is no longer pending
                     this._minimizeRestored(win, rec);
-                    return false; // run once, as Cinnamon's own later does (ui/main.js:1420-1423)
+                    return GLib.SOURCE_REMOVE; // run once, as Cinnamon's own later does (ui/main.js:1420-1423)
                 });
             }
             if (hasLater() && (rec.target !== null || rec.targetMonitor !== null || rec.lateEntry !== null || rec.monitorKeep !== null)) {
@@ -1164,13 +1165,13 @@ class WindowMemory {
                 // _onMap has corrected it. From the muffin 6.0.1 source.
                 rec.correctLater = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
                     rec.correctLater = null; // it is no longer pending
-                    if (this._tracked.get(win) !== rec || rec.paused || rec.ready) return false;
+                    if (this._tracked.get(win) !== rec || rec.paused || rec.ready) return GLib.SOURCE_REMOVE;
                     try {
                         this._correctAtMap(win, rec);
                     } catch (e) {
                         this._fail('correcting a hidden window failed', e);
                     }
-                    return false; // run once
+                    return GLib.SOURCE_REMOVE; // run once
                 });
             }
         } catch (e) {
@@ -1921,6 +1922,7 @@ function disable() {
     instance = null;
 }
 
-// A top-level module.exports is what Cinnamon returns and checks for init/enable/disable
-// (misc/fileUtils.js:178-206, ui/extension.js:276-281); Node's require in the tests reads the same object.
-module.exports = { init: init, enable: enable, disable: disable };
+// Cinnamon 6.0 loads this file with require() and checks module.exports for init/enable/disable (misc/fileUtils.js:178-206,
+// ui/extension.js:276-281); Node's require in the tests reads the same object. Cinnamon 6.8 loads it with its native
+// importer instead (ui/extension.js:519), where module is undefined and the top-level functions above are what it exports.
+if (typeof module !== 'undefined' && module) module.exports = { init: init, enable: enable, disable: disable };

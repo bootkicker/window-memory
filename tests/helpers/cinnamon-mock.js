@@ -112,10 +112,12 @@ function install(opts) {
     let nextId = 1;
     // removedSources: every id passed to GLib.source_remove, in order (removing a timer that already ran is a GLib warning).
     // homeDir: what GLib.get_home_dir() gives; nothing is written there.
+    // userDataDir: what GLib.get_user_data_dir() gives, <homeDir>/.local/share as with no XDG_DATA_HOME; a test may change it.
     const env = {
         configDir: configDir, homeDir: path.join(configDir, 'home'), timers: timers, timerMs: timerMs, removedSources: [], windows: [],
         moves: [], procFiles: {},
     };
+    env.userDataDir = path.join(env.homeDir, '.local', 'share');
 
     // The boot id of the running kernel (/proc/sys/kernel/random/boot_id, one line): opts.bootId, 'test-boot' by default; null
     // for a file that is not there. Only that exact path is faked; the tests never read the real one.
@@ -178,6 +180,7 @@ function install(opts) {
         PRIORITY_DEFAULT: 0,
         SOURCE_REMOVE: false,
         get_home_dir: () => env.homeDir,
+        get_user_data_dir: () => env.userDataDir,
         get_user_config_dir: () => configDir,
         // GLib.getenv: opts.env gives the environment of the session ({XDG_SESSION_ID: 'c2'}); a name not in it is null.
         getenv: name => (opts.env || {})[name] ?? null,
