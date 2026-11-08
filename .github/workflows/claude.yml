@@ -1,0 +1,45 @@
+# Claude Code GitHub Action: answers @claude in issues and pull request comments.
+# Setup: install the Claude GitHub App on the repository (https://github.com/apps/claude) and add
+# the repository secret CLAUDE_CODE_OAUTH_TOKEN (a Claude subscription token made with `claude setup-token`).
+# Documented in docs/issue-agents.md.
+#
+# Who can trigger it: only the repository owner, bootkicker (the github.actor test below). The action itself
+# also refuses anyone without write access to the repository, so both checks must pass. To let another
+# person trigger it, add their user name to the `github.actor` test; do not use allowed_non_write_users.
+name: Claude Code
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+jobs:
+  claude:
+    if: >-
+      github.actor == 'bootkicker' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      )
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      # actions: read lets Claude read CI results. No CI workflow exists. If one is added, add `actions: read` here
+      # and set `additional_permissions: actions: read` on the action below.
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          # Authenticates with a Claude subscription token: the secret CLAUDE_CODE_OAUTH_TOKEN, made with
+          # `claude setup-token`. For an Anthropic API key instead, add the secret ANTHROPIC_API_KEY and replace
+          # the line below with: anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The model is pinned, and a run stops after 15 turns, so that cost and behaviour do not change when the
+          # Claude Code default changes. Change both here (claude_args is passed to the Claude Code command line).
+          claude_args: --model claude-sonnet-5-5 --max-turns 15
