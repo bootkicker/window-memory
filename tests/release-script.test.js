@@ -6,7 +6,7 @@ const path = require('node:path');
 const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'release.sh'), 'utf8');
 
 test('release.sh commits carry only the release message, with no co-author trailer', () => {
-    const commits = script.split('\n').filter((line) => /\bgit commit\b/.test(line));
+    const commits = script.split('\n').filter((line) => /^\s*git\b.*\bcommit -q\b/.test(line));
     assert.ok(commits.length >= 2, 'the release commit and the store folder commit are found');
     for (const line of commits) assert.doesNotMatch(line, /Co-Authored-By/i, line.trim());
     assert.doesNotMatch(script, /noreply@anthropic\.com/);
@@ -31,7 +31,7 @@ test('release.sh names the store commit and pull request "uuid: description", a 
     assert.match(script, /TITLE="\$UUID: Add new extension"/);
     assert.match(script, /BRANCH_STORE="update-\$UUID-\$VERSION"/);
     assert.match(script, /TITLE="\$UUID: Update to \$VERSION"/);
-    assert.match(script, /git commit -q -m "\$TITLE"/);
+    assert.match(script, /\bcommit -q -m "\$TITLE"/);
     assert.match(script, /--title "\$TITLE"/);
     assert.ok(script.indexOf('git ls-tree') < script.indexOf('git checkout -q -B "$BRANCH_STORE" origin/HEAD'),
         'the branch is chosen before it is checked out');
@@ -71,6 +71,7 @@ test('the store pull request body says what the extension does, why the Startup 
     assert.match(body, /guarded, so Cinnamon 6\.8's native loader also loads it/);
     assert.match(body, /native imports is planned/);
     assert.match(body, /synchronously/);
+    assert.match(body, /written synchronously/, 'the state writes are answered too, not only the reads');
     assert.ok(body.includes('https://github.com/bootkicker/window-memory/commit/0123abc'), 'the source commit link');
     assert.doesNotMatch(body, /Claude|Anthropic|\bAI\b|agent|Generated with/i);
 });
@@ -79,4 +80,12 @@ test('the pull request body takes the tested versions from README.md and stops w
     const body = writeBody(t, '# Window Memory\n\nRequirements: Cinnamon 9.9. Tested on Some Distro 1.0 with Cinnamon 9.9.1.\n');
     assert.match(body, /Tested on Some Distro 1\.0 with Cinnamon 9\.9\.1\./);
     assert.throws(() => writeBody(t, '# Window Memory\n'), /Tested on/);
+});
+
+test('release.sh makes the store commit with the identity of the repository it releases from, not the global git name', () => {
+    const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'release.sh'), 'utf8');
+    assert.match(script, /git -C "\$ROOT" config user\.name/);
+    assert.match(script, /git -C "\$ROOT" config user\.email/);
+    assert.match(script, /git -c user\.name="\$STORE_NAME" -c user\.email="\$STORE_EMAIL" commit -q -m "\$TITLE"/);
+    assert.doesNotMatch(script, /^git commit -q -m "\$TITLE"$/m, 'a plain commit would take the global git name');
 });

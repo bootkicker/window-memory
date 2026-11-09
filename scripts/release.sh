@@ -120,7 +120,12 @@ else
     die "validate-spice is missing in the store clone"
 fi
 git add "$UUID"
-git commit -q -m "$TITLE"
+# The store commit carries the identity of the repository being released (its own git config, or the global one),
+# so the store's history shows the same author as the project's commits.
+STORE_NAME="$(git -C "$ROOT" config user.name)"
+STORE_EMAIL="$(git -C "$ROOT" config user.email)"
+[ -n "$STORE_NAME" ] && [ -n "$STORE_EMAIL" ] || die "git user.name and user.email are not set for $ROOT"
+git -c user.name="$STORE_NAME" -c user.email="$STORE_EMAIL" commit -q -m "$TITLE"
 STORE_COMMIT="$(git rev-parse --short HEAD)"
 
 BODY="$WORK/pr-body.md"
@@ -152,6 +157,7 @@ $TESTED
 ## Notes for reviewers
 
 - Synchronous file reads (\`load_contents\`, \`query_exists\`, \`GLib.file_get_contents\`): the small state and safety files and the boot id (a few KB) are read synchronously once at start, because they are needed before the first window is restored. Other reads happen only on a user action: importing a backup, or picking a window of an application with no desktop file (its \`/proc/<pid>/cmdline\`).
+- Synchronous file writes: the same small state file is written synchronously, with an atomic replace, one second after windows stop changing and when a window closes, so a logout or a crash loses nothing; the safety file is written only when the extension starts or stops.
 - \`global.set_stage_input_mode\`: never used to change the input mode. It runs only when ending the window pick, if \`Main.popModal\` throws with no modal left, and then sets the mode back to normal exactly as \`popModal\` does, so the desktop cannot stay without input.
 - \`require\` and \`module.exports\`: the module loader that Cinnamon 6.0, the version this extension declares, supports for xlets. The main file's \`module.exports\` is guarded, so Cinnamon 6.8's native loader also loads it. A move to native imports is planned; 6.8 is not tested yet.
 
