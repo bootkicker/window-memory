@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- The README describes installing from a GitHub release again, and how to compile the translations after a release or source install.
+
 ## 0.4.2
 
 ### Changed

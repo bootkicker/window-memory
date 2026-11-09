@@ -27,12 +27,25 @@ Requirements: Cinnamon 6.0, on X11 or, experimentally, on the Cinnamon Wayland s
 3. Open the Manage tab and turn Window Memory on.
 4. Click its Configure button to open the settings.
 
+### From a release
+
+1. Download `window-memory@bootkicker-<version>.zip` from the [Releases page](https://github.com/bootkicker/window-memory/releases/latest).
+2. Extract it into `~/.local/share/cinnamon/extensions/`, so that you get `~/.local/share/cinnamon/extensions/window-memory@bootkicker/`.
+3. Restart Cinnamon: log out and back in, or restart it from the Cinnamon menu.
+4. Turn Window Memory on in System Settings → Extensions → Manage.
+
 ### From source
 
 1. `git clone https://github.com/bootkicker/window-memory.git`
 2. `cp -r window-memory/files/window-memory@bootkicker ~/.local/share/cinnamon/extensions/`
 3. Restart Cinnamon: log out and back in, or restart it from the Cinnamon menu.
 4. Turn Window Memory on in System Settings → Extensions → Manage.
+
+The store compiles the translations when it installs the extension. After installing from a release or from source, compile them once (it needs `msgfmt`, from the `gettext` package):
+
+```bash
+for po in ~/.local/share/cinnamon/extensions/window-memory@bootkicker/po/*.po; do l=$(basename "$po" .po); mkdir -p ~/.local/share/locale/$l/LC_MESSAGES; msgfmt -o ~/.local/share/locale/$l/LC_MESSAGES/window-memory@bootkicker.mo "$po"; done
+```
 
 ## Settings - General tab
 
