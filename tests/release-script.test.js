@@ -84,8 +84,10 @@ test('the pull request body takes the tested versions from README.md and stops w
 
 test('release.sh makes the store commit with the identity of the repository it releases from, not the global git name', () => {
     const script = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'release.sh'), 'utf8');
-    assert.match(script, /git -C "\$ROOT" config user\.name/);
-    assert.match(script, /git -C "\$ROOT" config user\.email/);
+    assert.match(script, /git -C "\$ROOT" config --local user\.name \|\| true/, 'the repository identity only, never the global one');
+    assert.match(script, /git -C "\$ROOT" config --local user\.email \|\| true/);
+    assert.match(script, /git -C \\"\$ROOT\\" config --local user\.name NAME; git -C \\"\$ROOT\\" config --local user\.email EMAIL/,
+        'the message shows commands that set the identity in that repository only');
     assert.match(script, /git -c user\.name="\$STORE_NAME" -c user\.email="\$STORE_EMAIL" commit -q -m "\$TITLE"/);
     assert.doesNotMatch(script, /^git commit -q -m "\$TITLE"$/m, 'a plain commit would take the global git name');
 });

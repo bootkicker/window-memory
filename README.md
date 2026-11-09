@@ -1,4 +1,4 @@
-# Window Memory
+# <img src="files/window-memory@bootkicker/icon.png" alt="" width="48" height="48"> Window Memory
 
 Window Memory is a Cinnamon extension for Linux Mint. It automatically remembers where each window was and puts it back when the application opens again. There are no rules to write: it saves a window's size, position, monitor, workspace, maximized state and minimized state, and restores them on the next launch.
 
@@ -76,19 +76,6 @@ The settings window has two tabs. This is the General tab.
 | Pick a window to start at login | button | In the "Startup apps" tab. Click it, then a window. An application that has an entry in the applications menu is added at once, with a message and an Undo link. Any other window (for example a terminal started with options) opens a form filled in from the window, which you check and add. Escape or a right-click cancels. An application already in the list is not added twice: it is switched on, or, if you had removed a system entry, brought back. Works on X11 and, experimentally, on the Cinnamon Wayland session. |
 | Add or edit in Startup Applications… | button | In the "Startup apps" tab. Opens Cinnamon's Startup Applications, to add an entry by hand or to edit one. |
 | Version row | | The last row of both tabs: the version, the commit (a link to it on GitHub) and "Report an issue". On a Wayland session a short note, "Wayland (experimental)", follows the word "Version". |
-
-## Changing the look of the pick overlay
-
-While a "Pick a window" button is waiting for a click, a hint box shows at the top of the primary monitor and the window under the pointer is highlighted with a small label. The look is set by four constants near the top of `extension.js`; edit them, then turn the extension off and on (or restart Cinnamon). Colours are `rgba(red, green, blue, opacity)` with the opacity from 0 (invisible) to 1 (solid).
-
-| Constant | What it styles | Default |
-|---|---|---|
-| `PICK_HIGHLIGHT_STYLE` | The window under the pointer: a teal fill (#00CDCD, `rgba(0,205,205,0.16)`, 84% transparent) and a solid 2 px teal border with rounded corners. | `border: 2px solid rgba(0,205,205,1); background-color: rgba(0,205,205,0.16); border-radius: 6px;` |
-| `PICK_HINT_STYLE` | The hint box with the instructions: orange (#ff7139, `rgba(255,113,57,0.75)`, 25% transparent) with dark gray text (#353535). | `background-color: rgba(255,113,57,0.75); color: #353535; ...` |
-| `PICK_NAME_STYLE` | The small label with the window's WM class inside the highlight: the same orange and dark gray text. | `background-color: rgba(255,113,57,0.75); color: #353535; ...` |
-| `PICK_HINT_TOP` | How far the hint box sits below the top edge of the primary monitor, in pixels. | `60` |
-
-The first look (a blue highlight, `rgba(53,132,228,1)` border and `0.2` fill, and black hint and label boxes at `0.85` and `0.8` opacity) is kept in a comment above the constants, to switch back to it, together with the blue boxes with white text (`rgba(53,132,228,0.75)`) used before the orange ones.
 
 ## Scripts (for developers)
 

@@ -120,11 +120,12 @@ else
     die "validate-spice is missing in the store clone"
 fi
 git add "$UUID"
-# The store commit carries the identity of the repository being released (its own git config, or the global one),
-# so the store's history shows the same author as the project's commits.
-STORE_NAME="$(git -C "$ROOT" config user.name)"
-STORE_EMAIL="$(git -C "$ROOT" config user.email)"
-[ -n "$STORE_NAME" ] && [ -n "$STORE_EMAIL" ] || die "git user.name and user.email are not set for $ROOT"
+# The store commit carries the identity set in the repository being released (its own git config only, never the
+# global one), so the store's history shows the same author as the project's commits.
+STORE_NAME="$(git -C "$ROOT" config --local user.name || true)"
+STORE_EMAIL="$(git -C "$ROOT" config --local user.email || true)"
+[ -n "$STORE_NAME" ] && [ -n "$STORE_EMAIL" ] \
+    || die "set the identity for the store commit first: git -C \"$ROOT\" config --local user.name NAME; git -C \"$ROOT\" config --local user.email EMAIL"
 git -c user.name="$STORE_NAME" -c user.email="$STORE_EMAIL" commit -q -m "$TITLE"
 STORE_COMMIT="$(git rev-parse --short HEAD)"
 
