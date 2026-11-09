@@ -44,7 +44,7 @@ Requirements: Cinnamon 6.0, on X11 or, experimentally, on the Cinnamon Wayland s
 The store compiles the translations when it installs the extension. After installing from a release or from source, compile them once (it needs `msgfmt`, from the `gettext` package):
 
 ```bash
-for po in ~/.local/share/cinnamon/extensions/window-memory@bootkicker/po/*.po; do l=$(basename "$po" .po); mkdir -p ~/.local/share/locale/$l/LC_MESSAGES; msgfmt -o ~/.local/share/locale/$l/LC_MESSAGES/window-memory@bootkicker.mo "$po"; done
+d="${XDG_DATA_HOME:-$HOME/.local/share}"; for po in "$d"/cinnamon/extensions/window-memory@bootkicker/po/*.po; do l=$(basename "$po" .po); mkdir -p "$d/locale/$l/LC_MESSAGES"; msgfmt -o "$d/locale/$l/LC_MESSAGES/window-memory@bootkicker.mo" "$po"; done
 ```
 
 ## Settings - General tab
