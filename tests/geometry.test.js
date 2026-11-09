@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const G = require('../files/window-memory@bootkicker/lib/geometry.js');
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const G = lib('geometry');
 
 const monitors = [
     { index: 0, x: 0, y: 0, w: 1920, h: 1080, primary: true },

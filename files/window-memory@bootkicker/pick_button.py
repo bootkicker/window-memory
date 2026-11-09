@@ -45,8 +45,8 @@ LIST_KEY = 'excluded-apps'
 
 # The list is made this fraction of the height it has when the page is first shown (200 px, the
 # stock list's default). This constant is the only place in the extension. The width is not
-# touched. It must change together with TWO_THIRDS in tests/helpers/pick_button_harness.py and
-# item 26 of docs/manual-test.md, which say two thirds too.
+# touched. It must change together with the project's tests and manual test list, which say two
+# thirds too.
 LIST_HEIGHT_FACTOR = 2.0 / 3.0
 
 # The schema key of the most windows the extension remembers. It is not a row of the page: once the

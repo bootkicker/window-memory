@@ -3,30 +3,17 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { install } = require('./helpers/cinnamon-mock.js');
-const Store = require('../files/window-memory@bootkicker/lib/store.js');
+const { loadExtension, lib } = require('./helpers/load-cinnamon-module.js');
+const Store = lib('store');
 
 const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'extension.js');
 const HOTKEY = 'window-memory-forget-focused';
 
 function load(env) {
-    delete require.cache[EXT];
-    const ext = require(EXT);
+    const ext = loadExtension();
     ext.init({ uuid: 'window-memory@bootkicker' });
     const callbacks = ext.enable();
     return { ext, callbacks };
-}
-
-// Cinnamon 6.8 loads the main file of an extension with its native importer (ui/extension.js:519 at tag 6.8.0): there
-// `module` is undefined (only require() gives one, :98-106, :219), and the importer exports the top-level functions.
-// This evaluates extension.js that way: `module` undefined, require() still there for lib/, and the three top-level
-// functions read from the scope the file defines.
-function loadNative() {
-    const { createRequire } = require('node:module');
-    const src = fs.readFileSync(EXT, 'utf8');
-    const run = new Function('require', 'module',
-        src + '\n;return { init: typeof init === "function" ? init : undefined, enable: typeof enable === "function" ? enable : undefined,'
-        + ' disable: typeof disable === "function" ? disable : undefined };');
-    return run(createRequire(EXT), undefined);
 }
 
 function readState(env) {
@@ -2860,25 +2847,6 @@ test('forgetAll does not write over a state file that could not be moved aside',
     env.runTimers();
     assert.equal(fs.readFileSync(env.statePath, 'utf8'), '{broken');
     assert.deepEqual(fs.readdirSync(path.dirname(env.statePath)).filter(f => f !== 'safety.json'), ['state.json']);
-});
-
-test('extension.js loads with Cinnamon 6.8\'s native importer, where `module` is undefined, and exports init, enable and disable as top-level functions', () => {
-    const env = install();
-    let ext;
-    assert.doesNotThrow(() => { ext = loadNative(); });
-    for (const name of ['init', 'enable', 'disable']) assert.equal(typeof ext[name], 'function', name);
-    ext.init({ uuid: 'window-memory@bootkicker' });
-    const callbacks = ext.enable();
-    assert.equal(typeof callbacks, 'object');
-    ext.disable();
-    assert.equal(env.errors, undefined);
-});
-
-test('extension.js still exports init, enable and disable through module.exports when require() loads it', () => {
-    install();
-    delete require.cache[EXT];
-    const ext = require(EXT);
-    assert.deepEqual(Object.keys(ext).sort(), ['disable', 'enable', 'init']);
 });
 
 // The Spices reviewers' rule: a GLib source or Meta later callback returns GLib.SOURCE_REMOVE or SOURCE_CONTINUE, not a

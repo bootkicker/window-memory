@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const S = require('../files/window-memory@bootkicker/lib/store.js');
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const S = lib('store');
 
 const entry = (id, key, lastSeen) => ({
     id: id, key: key, lastSeen: lastSeen, title: '', workspace: 0, maximized: false, monitor: null, rel: null,
@@ -268,8 +269,26 @@ test('parseState keeps the first entry of an id that appears twice, so that one 
     assert.deepEqual(r.state.windows.map(e => [e.id, e.lastSeen]), [['1', 1], ['2', 5]]);
 });
 
+test('parseState keeps the first entry of each repeated id, in the order of the file, also for many entries', () => {
+    const entry = (id, lastSeen, over) => Object.assign({
+        id: id, key: 'a|a', lastSeen: lastSeen, workspace: 0, maximized: false, monitor: null, rel: null, role: '',
+    }, over || {});
+    const small = [entry('a', 1), entry('b', 2), entry('a', 3), entry('c', 4), entry('b', 5), entry('a', 6)];
+    assert.deepEqual(S.parseState(JSON.stringify({ version: 1, windows: small })).state.windows.map(e => [e.id, e.lastSeen]),
+        [['a', 1], ['b', 2], ['c', 4]]);
+    // An entry dropped before (a pop-up, or one that is not valid) does not take the id from a later good one.
+    const dropped = [entry('x', 1, { role: 'pop-up' }), entry('y', 2, { rel: 'bad' }), entry('x', 3), entry('y', 4), entry('x', 5)];
+    assert.deepEqual(S.parseState(JSON.stringify({ version: 1, windows: dropped })).state.windows.map(e => [e.id, e.lastSeen]),
+        [['x', 3], ['y', 4]]);
+    const many = [];
+    for (let round = 0; round < 3; round++) for (let i = 0; i < 2000; i++) many.push(entry('id' + i, round * 2000 + i));
+    const kept = S.parseState(JSON.stringify({ version: 1, windows: many })).state.windows;
+    assert.equal(kept.length, 2000);
+    assert.ok(kept.every((e, i) => e.id === 'id' + i && e.lastSeen === i), 'the first round is kept, in order');
+});
+
 test('entriesForKeys finds the entries of several keys, newest first', () => {
-    const Store = require('../files/window-memory@bootkicker/lib/store.js');
+    const Store = lib('store');
     const state = { version: 1, windows: [
         { id: 'a', key: 'k1', lastSeen: 5 }, { id: 'b', key: 'k2', lastSeen: 9 }, { id: 'c', key: 'k3', lastSeen: 7 },
         { id: 'd', key: 'k1', lastSeen: 8 },
@@ -279,7 +298,7 @@ test('entriesForKeys finds the entries of several keys, newest first', () => {
 });
 
 test('parseState keeps appId and client when they are valid and removes wrong values', () => {
-    const Store = require('../files/window-memory@bootkicker/lib/store.js');
+    const Store = lib('store');
     const base = { key: 'k|k', lastSeen: 1, rel: null, monitor: null, maximized: false, workspace: null };
     const text = JSON.stringify({ version: 1, windows: [
         Object.assign({ id: 'a', appId: 'x.desktop', client: 'wayland' }, base),

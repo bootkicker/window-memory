@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const I = require('../files/window-memory@bootkicker/lib/identity.js');
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const I = lib('identity');
 
 const normal = { type: 'normal', wmClass: 'Firefox', instance: 'Navigator', role: 'browser', title: 'Mozilla' };
 const noDialogs = { includeDialogs: false, excludedApps: [] };

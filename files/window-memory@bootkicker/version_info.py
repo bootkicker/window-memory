@@ -14,9 +14,9 @@
 # as a tooltip. A session on X11 gets the row without it. The session is read from XDG_SESSION_TYPE when the row is
 # built (from WAYLAND_DISPLAY when that is not set): the settings window runs inside the session it configures.
 #
-# The commit comes from version.json, next to this file, which scripts/dev-reinstall.sh and
-# scripts/package.sh write into the installed copy and the package (scripts/write-version-json.sh).
-# It is never in the repository. Without it only the version is shown.
+# The commit comes from version.json, next to this file. It is written into the installed copy and
+# the package when they are built (scripts/write-version-json.sh) and is not tracked in the source
+# repository. Without it only the version is shown.
 #
 # cinnamon-settings builds this widget for a schema item of type "custom"
 # (xlet-settings.py:474-491, called at :413 and :457) as VersionInfo(item, key, settings),

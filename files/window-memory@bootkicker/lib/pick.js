@@ -74,5 +74,3 @@ function excludeRows(rows, wmClass) {
     }
     return { rows: list.concat([{ enabled: true, wmclass: String(wmClass).trim() }]), changed: true };
 }
-
-module.exports = { normalizeClass, topWindowAt, isCovered, addToList, excludeRows };

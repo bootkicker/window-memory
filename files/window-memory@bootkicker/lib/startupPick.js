@@ -55,5 +55,3 @@ function encodeResult(result, stamp) {
     }
     return JSON.stringify({ v: 1, stamp: stamp, kind: 'form', name: result.name, command: result.command });
 }
-
-module.exports = { quoteArgs, classify, encodeResult };

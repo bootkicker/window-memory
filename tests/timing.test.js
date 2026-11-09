@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const T = require('../files/window-memory@bootkicker/lib/timing.js');
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const T = lib('timing');
 
 function fakeSched() {
     const timers = new Map();

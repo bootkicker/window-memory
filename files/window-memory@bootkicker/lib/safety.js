@@ -5,9 +5,9 @@
 // the extension stopped, the error budget and the restart-loop test. No file or
 // Cinnamon access here; the extension reads and writes safety.json itself.
 
-const LIMITS = { errorLimit: 20, errorWindowSeconds: 300, loopStarts: 3, loopGapSeconds: 120 };
+var LIMITS = { errorLimit: 20, errorWindowSeconds: 300, loopStarts: 3, loopGapSeconds: 120 };
 
-const REASONS = {
+var REASONS = {
     MISSING_CALL: 'missing-call',
     START_FAILED: 'start-failed',
     TOO_MANY_ERRORS: 'too-many-errors',
@@ -115,8 +115,3 @@ function afterCleanDisable(safety) {
 function resumeSafety() {
     return emptySafety();
 }
-
-module.exports = {
-    LIMITS, REASONS, emptySafety, parseSafety, serializeSafety, createErrorBudget,
-    recordStart, isRestartLoop, stopRecord, stopSafety, afterCleanDisable, resumeSafety,
-};

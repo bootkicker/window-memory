@@ -3,7 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { install } = require('./helpers/cinnamon-mock.js');
-const Safety = require('../files/window-memory@bootkicker/lib/safety.js');
+const { loadExtension, lib } = require('./helpers/load-cinnamon-module.js');
+const Safety = lib('safety');
 
 const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'extension.js');
 
@@ -11,8 +12,7 @@ const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'ext
 // a stop; the Enable switch resumes it. env.owner is the instance behind enable() (the mock's settings object gets it).
 
 function load() {
-    delete require.cache[EXT];
-    const ext = require(EXT);
+    const ext = loadExtension();
     ext.init({ uuid: 'window-memory@bootkicker' });
     const callbacks = ext.enable();
     return { ext, callbacks };

@@ -14,7 +14,7 @@ function norm(s) {
 // Many applications need no group because both sessions give them the same key (Nautilus, Mousepad, Thunar and others).
 // Not here: the properties window of Nemo (`nemo|file_properties` on X11, `nemo|nemo` on Wayland): it would share the key
 // of Nemo's main windows.
-const KEY_GROUPS = [
+var KEY_GROUPS = [
     ['gnome-terminal|gnome-terminal-server', 'gnome-terminal-server|gnome-terminal-server'],
     ['kate|kate-bin', 'kate|kate', 'org.kde.kate|org.kde.kate'],
     ['dolphin|dolphin', 'org.kde.dolphin|org.kde.dolphin'],
@@ -112,5 +112,3 @@ function pickEntry(candidates, ctx) {
     }
     return free[0];
 }
-
-module.exports = { windowKey, equivalentKeys, KEY_GROUPS, learnedCandidates, isEligible, pickEntry };

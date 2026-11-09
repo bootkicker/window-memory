@@ -7,6 +7,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { install } = require('./helpers/cinnamon-mock.js');
+const { loadExtension } = require('./helpers/load-cinnamon-module.js');
 
 const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'extension.js');
 const SCHEMA = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'settings-schema.json'), 'utf8'));
@@ -20,8 +21,7 @@ const PICK_MS = 20000;
 const WINDOW_TYPE = { NORMAL: 0, DIALOG: 1, DOCK: 3, DESKTOP: 4 }; // the mock's Meta.WindowType
 
 function load() {
-    delete require.cache[EXT];
-    const ext = require(EXT);
+    const ext = loadExtension();
     ext.init({ uuid: 'window-memory@bootkicker' });
     const callbacks = ext.enable();
     return { ext, callbacks };

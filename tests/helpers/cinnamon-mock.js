@@ -417,7 +417,8 @@ function install(opts) {
         },
     };
     globalThis.imports = {
-        ui: { main: Main, settings: { ExtensionSettings: ExtensionSettings } },
+        // ui.extension: Cinnamon 6.0 to 6.6 have no getCurrentExtension() there; a test of the 6.8 path adds one.
+        ui: { main: Main, settings: { ExtensionSettings: ExtensionSettings }, extension: {} },
         // imports.misc.config.PACKAGE_VERSION is Cinnamon's version (misc/config.js, generated at build time).
         misc: { signalManager: SignalManager, config: { PACKAGE_VERSION: opts.cinnamonVersion || '6.0.5' } },
         gi: { Meta: Meta, GLib: GLib, Gio: Gio, Cinnamon: Cinnamon, Clutter: Clutter, St: { Widget: Widget, Label: Label } },

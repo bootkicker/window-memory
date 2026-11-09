@@ -609,7 +609,7 @@ def blacklisted_apps():
 
 def parse_pick(value):
     """The pick result in the text value of startup-pick, as written by the extension
-    (lib/startup-pick.js, encodeResult): {"v":1,"stamp":N,"kind":"app","desktopFile":"/x.desktop",
+    (lib/startupPick.js, encodeResult): {"v":1,"stamp":N,"kind":"app","desktopFile":"/x.desktop",
     "name":"..."} or {"v":1,"stamp":N,"kind":"form","name":"...","command":"..."}. Returns the dict,
     or (None, why) when it is not such a result. The empty value is not a result either."""
     if not isinstance(value, str) or not value:

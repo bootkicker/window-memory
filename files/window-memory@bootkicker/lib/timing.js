@@ -26,5 +26,3 @@ function createDebouncer(delayMs, fn, sched) {
         },
     };
 }
-
-module.exports = { createDebouncer };

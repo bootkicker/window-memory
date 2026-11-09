@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const S = require('../files/window-memory@bootkicker/lib/safety.js');
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const S = lib('safety');
 
 test('parseSafety of null, \'\', \'not json\', \'[]\', \'{"stopped": 5}\', \'{"starts": "x"}\' gives emptySafety()', () => {
     for (const input of [null, '', 'not json', '[]', '{"stopped": 5}', '{"starts": "x"}']) {

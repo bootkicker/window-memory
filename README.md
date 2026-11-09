@@ -27,18 +27,12 @@ Requirements: Cinnamon 6.0, on X11 or, experimentally, on the Cinnamon Wayland s
 3. Open the Manage tab and turn Window Memory on.
 4. Click its Configure button to open the settings.
 
-### From a release (manual)
-
-1. Download the archive of the release from this repository's Releases page.
-2. Extract its folder `window-memory@bootkicker` into `~/.local/share/cinnamon/extensions/`.
-3. Restart Cinnamon: log out and back in, or restart it from the Cinnamon menu.
-4. Turn Window Memory on in System Settings → Extensions → Manage.
-
 ### From source
 
 1. `git clone https://github.com/bootkicker/window-memory.git`
 2. `cp -r window-memory/files/window-memory@bootkicker ~/.local/share/cinnamon/extensions/`
-3. Restart Cinnamon and turn the extension on, as in steps 3 and 4 above.
+3. Restart Cinnamon: log out and back in, or restart it from the Cinnamon menu.
+4. Turn Window Memory on in System Settings → Extensions → Manage.
 
 ## Settings - General tab
 
@@ -78,6 +72,8 @@ The settings window has two tabs. This is the General tab.
 | Version row | | The last row of both tabs: the version, the commit (a link to it on GitHub) and "Report an issue". On a Wayland session a short note, "Wayland (experimental)", follows the word "Version". |
 
 ## Scripts (for developers)
+
+These scripts are in the source repository, https://github.com/bootkicker/window-memory.
 
 - `node --test`: unit tests.
 - `scripts/check.sh`: all checks: tests, Python and shell syntax, the translation template and the git state.

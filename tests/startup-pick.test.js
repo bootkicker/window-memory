@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// lib/startup-pick.js: the pure logic of "Pick a window to start at login": a desktop Exec value from an argument list,
+// lib/startupPick.js: the pure logic of "Pick a window to start at login": a desktop Exec value from an argument list,
 // the choice between an application (desktop file) and the form (command), and the text handed to the settings tab.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { quoteArgs, classify, encodeResult } = require(path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'lib', 'startup-pick.js'));
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const { quoteArgs, classify, encodeResult } = lib('startupPick');
 
 // Splits a string the way a shell does, with no expansion of anything that is not quoted: prints each word NUL-ended.
 function shellSplit(text) {

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { install } = require('./helpers/cinnamon-mock.js');
+const { loadExtension } = require('./helpers/load-cinnamon-module.js');
 
 const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'extension.js');
 
@@ -11,8 +12,7 @@ const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'ext
 // class comes late.
 
 function load() {
-    delete require.cache[EXT];
-    const ext = require(EXT);
+    const ext = loadExtension();
     ext.init({ uuid: 'window-memory@bootkicker' });
     ext.enable();
     return ext;

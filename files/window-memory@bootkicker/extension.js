@@ -15,14 +15,22 @@ const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 
-// Cinnamon resolves './lib/x' to <extension dir>/lib/x.js and returns its module.exports (misc/fileUtils.js:241-267).
-const Geometry = require('./lib/geometry');
-const Identity = require('./lib/identity');
-const Pick = require('./lib/pick');
-const Safety = require('./lib/safety');
-const StartupPick = require('./lib/startup-pick');
-const Store = require('./lib/store');
-const Timing = require('./lib/timing');
+const Extension = imports.ui.extension;
+
+// The modules in lib/. Cinnamon 6.8 imports them natively through getCurrentExtension() and deprecates require; Cinnamon
+// 6.0 to 6.6 have no getCurrentExtension(), so there require loads <extension dir>/lib/<name>.js (misc/fileUtils.js).
+function libModule(name) {
+    if (typeof Extension.getCurrentExtension === 'function') return Extension.getCurrentExtension().imports.lib[name];
+    return require('./lib/' + name);
+}
+
+const Geometry = libModule('geometry');
+const Identity = libModule('identity');
+const Pick = libModule('pick');
+const Safety = libModule('safety');
+const StartupPick = libModule('startupPick');
+const Store = libModule('store');
+const Timing = libModule('timing');
 
 const UUID = 'window-memory@bootkicker';
 const LOG = '[window-memory] ';
@@ -1921,8 +1929,3 @@ function disable() {
     if (instance) instance.disable();
     instance = null;
 }
-
-// Cinnamon 6.0 loads this file with require() and checks module.exports for init/enable/disable (misc/fileUtils.js:178-206,
-// ui/extension.js:276-281); Node's require in the tests reads the same object. Cinnamon 6.8 loads it with its native
-// importer instead (ui/extension.js:519), where module is undefined and the top-level functions above are what it exports.
-if (typeof module !== 'undefined' && module) module.exports = { init: init, enable: enable, disable: disable };

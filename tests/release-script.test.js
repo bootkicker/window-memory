@@ -67,9 +67,10 @@ test('the store pull request body says what the extension does, why the Startup 
     assert.match(body, /Wayland/);
     assert.match(body, /Notes for reviewers/);
     assert.match(body, /set_stage_input_mode/);
-    assert.match(body, /module\.exports/);
-    assert.match(body, /guarded, so Cinnamon 6\.8's native loader also loads it/);
-    assert.match(body, /native imports is planned/);
+    assert.match(body, /Cinnamon 6\.8's native importer \(`getCurrentExtension\(\)\.imports`\)/);
+    assert.match(body, /`require\(\)` only on Cinnamon 6\.0 to 6\.6, which have no `getCurrentExtension\(\)`/);
+    assert.match(body, /no file uses `module\.exports`/);
+    assert.doesNotMatch(body, /guarded|is planned/, 'the old note about the guarded module.exports is gone');
     assert.match(body, /synchronously/);
     assert.match(body, /written synchronously/, 'the state writes are answered too, not only the reads');
     assert.ok(body.includes('https://github.com/bootkicker/window-memory/commit/0123abc'), 'the source commit link');
@@ -90,4 +91,20 @@ test('release.sh makes the store commit with the identity of the repository it r
         'the message shows commands that set the identity in that repository only');
     assert.match(script, /git -c user\.name="\$STORE_NAME" -c user\.email="\$STORE_EMAIL" commit -q -m "\$TITLE"/);
     assert.doesNotMatch(script, /^git commit -q -m "\$TITLE"$/m, 'a plain commit would take the global git name');
+});
+
+// A second run for the same submission (a fix while the first pull request is still open) must not call gh pr create, which
+// fails for a branch that already has an open pull request: it updates that pull request's body instead.
+test('release.sh updates the body of an open pull request from the same store branch instead of opening a second one', () => {
+    const submit = script.slice(script.indexOf('say "submitting"'));
+    assert.match(submit, /gh pr list --repo "\$SPICES_REPO" --head "\$BRANCH_STORE" --state open/);
+    assert.match(submit, /select\(\.headRepositoryOwner\.login == "bootkicker"\)/, 'only a pull request from our fork counts');
+    assert.match(submit, /gh pr edit "\$EXISTING_PR" --repo "\$SPICES_REPO" --body-file "\$BODY"/);
+    assert.match(submit, /gh pr create --repo "\$SPICES_REPO" --head "bootkicker:\$BRANCH_STORE"/);
+    const edit = submit.indexOf('gh pr edit'), create = submit.indexOf('gh pr create');
+    const check = submit.indexOf('if [ -n "$EXISTING_PR" ]');
+    assert.ok(check > 0 && check < edit && edit < create, 'the edit is the branch taken when a pull request exists');
+    assert.match(submit, /echo "  updated the body of the open pull request #\$EXISTING_PR"/);
+    assert.match(submit, /echo "  opened a new pull request"/);
+    assert.ok(submit.indexOf('git push -q -f fork "$BRANCH_STORE"') < check, 'the branch is pushed first, so an open pull request shows the new commit');
 });

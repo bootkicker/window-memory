@@ -41,5 +41,3 @@ function isConnected(monitors, saved) {
     if (!saved || !monitors) return false;
     return monitors.some(m => sameMonitor(m, saved) || (m.index === saved.index && m.x === saved.x && m.y === saved.y));
 }
-
-module.exports = { sameMonitor, toRelative, toAbsolute, clampRect, chooseMonitor, isConnected };

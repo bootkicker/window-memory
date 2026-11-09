@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // "Pick a window to start at login" in extension.js: pickStartupWindow() is the modal pick of "Pick a window", but a click
 // writes what the window is (an application with a desktop file, or a command line) to the hidden key startup-pick, as the
-// JSON text of lib/startup-pick.js, and leaves excluded-apps alone. The settings tab (a separate process) reads the key.
+// JSON text of lib/startupPick.js, and leaves excluded-apps alone. The settings tab (a separate process) reads the key.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { install } = require('./helpers/cinnamon-mock.js');
-const Safety = require('../files/window-memory@bootkicker/lib/safety.js');
+const { loadExtension, lib } = require('./helpers/load-cinnamon-module.js');
+const Safety = lib('safety');
 
 const EXT = path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'extension.js');
 const ESCAPE = 65307; // Clutter.KEY_Escape
@@ -15,8 +16,7 @@ const PICK_MS = 20000;
 const KEY = 'startup-pick';
 
 function load() {
-    delete require.cache[EXT];
-    const ext = require(EXT);
+    const ext = loadExtension();
     ext.init({ uuid: 'window-memory@bootkicker' });
     const callbacks = ext.enable();
     return { ext, callbacks };

@@ -31,6 +31,7 @@ test('info.json names the licence of the package and keeps the author', () => {
     const info = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'info.json'), 'utf8'));
     assert.equal(info.license, 'GPL-3.0-or-later');
     assert.equal(info.author, 'bootkicker');
+    assert.deepEqual(Object.keys(info).sort(), ['author', 'license'], 'no original_author: the author wrote it');
 });
 
 test('the licence ships in the package from the repository LICENSE, not from a copy in files/', () => {

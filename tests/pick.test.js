@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const path = require('node:path');
-const Pick = require(path.join(__dirname, '..', 'files', 'window-memory@bootkicker', 'lib', 'pick.js'));
+const { lib } = require('./helpers/load-cinnamon-module.js');
+const Pick = lib('pick');
 
 function win(over) {
     return Object.assign({

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.2
+
+### Changed
+- On Cinnamon 6.8 the extension loads its modules with Cinnamon's native module loader, so no deprecation warning is logged. It works the same as before on Cinnamon 6.0 to 6.6.
+- The README no longer describes release archives: install from the Cinnamon Spices store or from source.
+
+### Fixed
+- Faster loading of the saved windows when there are many.
+
 ## 0.4.1
 
 ### Added

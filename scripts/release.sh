@@ -160,7 +160,7 @@ $TESTED
 - Synchronous file reads (\`load_contents\`, \`query_exists\`, \`GLib.file_get_contents\`): the small state and safety files and the boot id (a few KB) are read synchronously once at start, because they are needed before the first window is restored. Other reads happen only on a user action: importing a backup, or picking a window of an application with no desktop file (its \`/proc/<pid>/cmdline\`).
 - Synchronous file writes: the same small state file is written synchronously, with an atomic replace, one second after windows stop changing and when a window closes, so a logout or a crash loses nothing; the safety file is written only when the extension starts or stops.
 - \`global.set_stage_input_mode\`: never used to change the input mode. It runs only when ending the window pick, if \`Main.popModal\` throws with no modal left, and then sets the mode back to normal exactly as \`popModal\` does, so the desktop cannot stay without input.
-- \`require\` and \`module.exports\`: the module loader that Cinnamon 6.0, the version this extension declares, supports for xlets. The main file's \`module.exports\` is guarded, so Cinnamon 6.8's native loader also loads it. A move to native imports is planned; 6.8 is not tested yet.
+- \`require\`: the extension loads its modules with Cinnamon 6.8's native importer (\`getCurrentExtension().imports\`) when it exists, and with \`require()\` only on Cinnamon 6.0 to 6.6, which have no \`getCurrentExtension()\`; no file uses \`module.exports\`.
 
 ## Source
 
@@ -186,5 +186,16 @@ fi
 say "submitting"
 git -C "$ROOT" push -q origin "$BRANCH" "v$VERSION"
 git push -q -f fork "$BRANCH_STORE"
-gh pr create --repo "$SPICES_REPO" --head "bootkicker:$BRANCH_STORE" \
-    --title "$TITLE" --body-file "$BODY"
+# A pull request from this branch that is still open (an earlier run for the same submission) already shows the pushed
+# commit, and opening a second one would fail, so only its body is updated.
+EXISTING_PR="$(gh pr list --repo "$SPICES_REPO" --head "$BRANCH_STORE" --state open --json number,headRepositoryOwner \
+    --jq '.[] | select(.headRepositoryOwner.login == "bootkicker") | .number' | head -n1)" \
+    || die "could not list the open pull requests of $SPICES_REPO"
+if [ -n "$EXISTING_PR" ]; then
+    gh pr edit "$EXISTING_PR" --repo "$SPICES_REPO" --body-file "$BODY"
+    echo "  updated the body of the open pull request #$EXISTING_PR"
+else
+    gh pr create --repo "$SPICES_REPO" --head "bootkicker:$BRANCH_STORE" \
+        --title "$TITLE" --body-file "$BODY"
+    echo "  opened a new pull request"
+fi

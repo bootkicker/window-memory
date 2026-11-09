@@ -64,10 +64,15 @@ function parseState(text) {
     }
     if (!data || typeof data !== 'object' || data.version !== VERSION || !Array.isArray(data.windows))
         return { state: emptyState(), recovered: true };
+    const seen = new Set();
     const windows = data.windows
         .filter(isValidEntry)
         .filter(e => e.role !== POPUP_ROLE)
-        .filter((e, i, all) => all.findIndex(o => o.id === e.id) === i) // one entry per id: the first
+        .filter(e => { // one entry per id: the first
+            if (seen.has(e.id)) return false;
+            seen.add(e.id);
+            return true;
+        })
         .map(e => Object.assign({}, e, { key: normalizeKey(e), minimized: e.minimized === true }))
         .map(dropBadOptionalFields);
     return { state: { version: VERSION, windows: windows }, recovered: false };
@@ -131,8 +136,3 @@ function saveState(io, path, state) {
     io.write(tmp, serializeState(state));
     io.rename(tmp, path);
 }
-
-module.exports = {
-    emptyState, parseState, serializeState, entriesForKey, entriesForKeys, upsertEntry, removeEntry,
-    pruneState, newEntryId, loadState, saveState,
-};
